@@ -3,6 +3,9 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
+#include <termios.h>
+#include <unistd.h>
 
 
 int challenge();

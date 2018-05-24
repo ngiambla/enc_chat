@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <termios.h>
-#include <unistd.h>
 #include "enc.h"
 
 #define SIZE 32
