@@ -7,8 +7,7 @@ This is an implementation of a chatroom, (using multicast over unicast), secured
 Using the terminal, enter the commands:
 
 ```bash
-gcc -o client client.c enc.c -lncurses -lpthread
-gcc -o server server.c enc.c
+make
 ```
 
 ## Execution ##
@@ -18,14 +17,16 @@ Run:
 ```bash
 ./server
 ```
+This process will ask you to set a session password. Feel free to choose any password.
 
-This particular program requires that each user enter the password 'thirtyfive' in order to enter the chatroom.
-This chatroom requires 5 members to be online in order for communication to start. Each user has a name (defined in server.c)
 
 Run:
 ```bash
 ./client
 ```
+
+Only 5 users are known to the server, `r1cardo`, `leon4rdo`, `appl3`, `micr0` & `c0de`.
+
 
 ## Bugs, Comments or Concerns ##
 Let me know at gdev.engineering@gmail.com, and 'fork' off.
