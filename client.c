@@ -39,60 +39,59 @@ void *sendMessage(){
 	char str[95];
 	char msg[105];
 
-    while(1)
-    {
-	bzero(str,95);
-	bzero(msg,105);
-	bzero(pdu_out.data,220);
-	bzero(pdu_out.sname,20);
-        // Get user's message
-	mvwgetnstr(inputwin, 1, 4, str, 95);	
+    while(1) {
+		bzero(str,95);
+		bzero(msg,105);
+		bzero(pdu_out.data,220);
+		bzero(pdu_out.sname,20);
+	    // Get user's message
+		mvwgetnstr(inputwin, 1, 4, str, 95);	
 
 
-	// Format Message for Display...
-        snprintf(msg, sizeof(msg), "[%s]%s%s", name, ": ", str);
+		// Format Message for Display...
+	    snprintf(msg, sizeof(msg), "[%s]%s%s", name, ": ", str);
 
-	enc(key,str,pdu_out.data);
-	enc(key,name,pdu_out.sname);
+		enc(key,str,pdu_out.data);
+		enc(key,name,pdu_out.sname);
 
         // Check for quiting
-        if(strcmp(str,"quit")==0)
-        {
-	    pdu_out.type=QUIT;
-            done = 1;
-            // Sending Off Exit.
-	    sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
-            pthread_mutex_destroy(&mutexsum);
-            pthread_exit(NULL);
-            close(sockfd);
-      
-	}if(strcmp(str,"help")==0){
-	    pdu_out.type=HELP;
-	}else if(strcmp(str, "ls")==0){
-	    pdu_out.type=LST;
-	}else{
-	   pdu_out.type=MSG;
-	}
+	    if(strcmp(str,"quit") == 0) {
+		    pdu_out.type=QUIT;
+	        done = 1;
+	        // Sending Off Exit.
+		    sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+	        pthread_mutex_destroy(&mutexsum);
+	        pthread_exit(NULL);
+	        close(sockfd);
+	  
+		}if(strcmp(str,"help") == 0) {
+		    pdu_out.type=HELP;
+		}else if(strcmp(str, "ls") == 0) {
+		    pdu_out.type=LST;
+		}else {
+		   pdu_out.type=MSG;
+		}
 
-        // scroll the top if the line number exceed height
-        pthread_mutex_lock (&mutexsum);
+	        // scroll the top if the line number exceed height
+	        pthread_mutex_lock (&mutexsum);
 
-        // Send message to server
-	if(strcmp(str,"")!=0){
-        	sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
-	}
-        // write it in chat window (top)
-	mvwprintw(msgwin,++input,2,msg);
-	wclear(inputwin);
-	box(inputwin,0,0);
+	        // Send message to server
+		if(strcmp(str,"") != 0) {
+	        sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+		
+	        // write it in chat window (top)
+			mvwprintw(msgwin,++input,2,msg);
+		}
+		wclear(inputwin);
+		box(inputwin,0,0);
     	mvwprintw(inputwin, 1, 1, "$:  ");
         // scroll the bottom if the line number exceed height
-       if(input==parent_y/2+9){
-                        wclear(msgwin);
-                        box(msgwin,0,0);
-                        input=1;
-	}
-	wrefresh(msgwin);
+		if(input==parent_y/2+9){
+			wclear(msgwin);
+			box(msgwin,0,0);
+			input=1;
+		}
+		wrefresh(msgwin);
         wrefresh(inputwin);
         pthread_mutex_unlock (&mutexsum);
     }
@@ -111,19 +110,18 @@ void *listener(){
 	char dMsg[110];
 	char tname[15];
 	char tempMsg[120];
-    while(1)
-    {
+    while(1) {
         //Receive message from server
 	
-	bzero(dname,10);
-	bzero(dMsg,110);
-	bzero(tname,15);
-	bzero(tempMsg,120);
-	bzero(pdu_in.data,220);
-	bzero(pdu_in.sname,20);
-	recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
+		bzero(dname,10);
+		bzero(dMsg,110);
+		bzero(tname,15);
+		bzero(tempMsg,120);
+		bzero(pdu_in.data,220);
+		bzero(pdu_in.sname,20);
+		recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
 
-	pthread_mutex_lock (&mutexsum);
+		pthread_mutex_lock (&mutexsum);
 
         switch(pdu_in.type){
 		
@@ -158,14 +156,15 @@ void *listener(){
                 	wattron(msgwin, COLOR_PAIR(2));
                 	break;
 			
-	}
+		}
 
         //scroll the top if the line number exceed height
-        if(input==parent_y/2+9){
-            	wclear(msgwin);
-		box(msgwin,0,0);
-		input=1;
-	}
+	    if(input==parent_y/2+9){
+	       	wclear(msgwin);
+			box(msgwin,0,0);
+			input=1;
+		}
+
       	wrefresh(msgwin);
         wrefresh(inputwin);
         pthread_mutex_unlock (&mutexsum);
@@ -181,19 +180,19 @@ void *listener(){
 Main() of client.c
 *********************************/
 
-int main()
-{
+int main() {
 	int nbytes,n,chal=0;
 	//PDU required for IN and OUT.
-    	pdu_t pdu_in,pdu_out;
-    	int connfd,len,recv=1;
-    	char tempname[10], respname[10];
-    	char tempmsg[110], respmsg[110];
-    	char encryp[220],serverName[10];
+	pdu_t pdu_in,pdu_out;
+	int connfd,len,recv=1;
+	char tempname[10], respname[10];
+	char tempmsg[110], respmsg[110];
+	char encryp[220],serverName[10];
 	char *token,token1[100],token2[100];
-    	char temppass[32],temp[10];
-    	time_t rawtime;
-    	struct tm * timeinfo;
+    char temppass[32],temp[10];
+    time_t rawtime;
+    struct tm * timeinfo;
+	
 	//Getting Current Time for Display.
 	time ( &rawtime );
 	timeinfo = localtime ( &rawtime );
@@ -218,91 +217,88 @@ int main()
 
 	printf("[Welcome to An0n...]\n\n");
 	printf("[Time] %s\n",asctime (timeinfo));
-    		while(reg==0){
-			bzero(pdu_out.data,110); /*-----------------*/
-			bzero(pdu_out.sname,10); /*Clear Char Arrays*/
-			bzero(tempname,10);      /*-----------------*/
-			bzero(temppass,32);
-			bzero(respname,10);
-			bzero(serverName,10);
-			bzero(respmsg,110);
-			bzero(tempmsg,110);
-			bzero(key, 32);
-			bzero(name,10);
+	while(reg==0) {
+		bzero(pdu_out.data,110); /*-----------------*/
+		bzero(pdu_out.sname,10); /*Clear Char Arrays*/
+		bzero(tempname,10);      /*-----------------*/
+		bzero(temppass,32);
+		bzero(respname,10);
+		bzero(serverName,10);
+		bzero(respmsg,110);
+		bzero(tempmsg,110);
+		bzero(key, 32);
+		bzero(name,10);
 
-			printf("User Name?\n~$: "); //Requesting For User Name, setting PDU type as CHAL. 
-        	        pdu_out.type=CHAL;	    //Beginning AUTH phase.
+		printf("User Name?\n~$: "); //Requesting For User Name, setting PDU type as CHAL. 
+    	pdu_out.type=CHAL;	    //Beginning AUTH phase.
 
-        	        fgets(temp,10,stdin);
-			strncpy(tempname,temp,strlen(temp)-1);
-			printf("Authentication Required for, %s\n",tempname); //Requesting for Password. Should Hide terminal output.
+    	fgets(temp,10,stdin);
+		strncpy(tempname,temp,strlen(temp)-1);
+		printf("Authentication Required for, %s\n",tempname); //Requesting for Password. Should Hide terminal output.
+
+		getpasswrd(temppass); //Getting Password.
+		
+		printf("Passcode: %s\n\n",temppass);
+		chal=challenge();
+		snprintf (tempmsg, 110, "%d", chal);
+		bzero(encryp,220);
 	
-			getpasswrd(temppass); //Getting Password.
-			
-			printf("Passcode: %s\n\n",temppass);
-			chal=challenge();
-			snprintf (tempmsg, 110, "%d", chal);
-			bzero(encryp,220);
-		
-			enc(temppass,tempname,pdu_out.sname);//Encryping Nonce.
-			enc(temppass,tempmsg,pdu_out.data);  //Encrypting Name
-		
-			printf("\n[CHAL]: Asking server to Authenticate...\n");
-			nbytes=sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
-			printf("[RECV]: Got PDU.\n");
-			recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
-        		switch(pdu_in.type){
-				case RESP:
-					printf("[RESP]: Parsing Response.\n");
-					dec(temppass,pdu_in.sname,respname);				
-					dec(temppass,pdu_in.data,respmsg);
+		enc(temppass,tempname,pdu_out.sname);//Encryping Nonce.
+		enc(temppass,tempmsg,pdu_out.data);  //Encrypting Name
+	
+		printf("\n[CHAL]: Asking server to Authenticate...\n");
+		nbytes=sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+		printf("[RECV]: Got PDU.\n");
+		recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
+		switch(pdu_in.type){
+			case RESP:
+				printf("[RESP]: Parsing Response.\n");
+				dec(temppass,pdu_in.sname,respname);				
+				dec(temppass,pdu_in.data,respmsg);
 
-					token=strtok(respmsg,"-");
-					strcpy(token1,token);
-					token=strtok(NULL,"-");
-					strcpy(token2,token);
-					if(strcmp(token2,tempmsg)==0){
-						printf(">> Sending info to server.\n");
-						strncpy(key,temppass,32);
-						strncpy(name,tempname,10);
-						pdu_out.type=AUTH;
-						bzero(pdu_out.data,110);
-						bzero(pdu_out.sname,10);
-						enc(key,token1,pdu_out.data);
-						enc(key,name,pdu_out.sname);
-						sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
-						printf("[RECV]: Got PDU.\n");
-						recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
-						switch(pdu_in.type){
-							case AUTH:
-								dec(key,pdu_in.sname,serverName);
-								//printf("\n%s <--> %s",serverName,respname);
-								if(strcmp(serverName,respname)==0){
-									reg=1;
-								}else{
-									printf("[ERR] something weird happened.");
-									exit(-1);
-								}
-								break;
-						}
-					}else{
-						printf("[ERR] something weird happened.");
-						exit(-1);
+				token=strtok(respmsg,"-");
+				strcpy(token1,token);
+				token=strtok(NULL,"-");
+				strcpy(token2,token);
+				if(strcmp(token2,tempmsg)==0){
+					printf(">> Sending info to server.\n");
+					strncpy(key,temppass,32);
+					strncpy(name,tempname,10);
+					pdu_out.type=AUTH;
+					bzero(pdu_out.data,110);
+					bzero(pdu_out.sname,10);
+					enc(key,token1,pdu_out.data);
+					enc(key,name,pdu_out.sname);
+					sendto(sockfd, (void*)&pdu_out, sizeof(pdu_t), 0,(struct sockaddr *)&servaddr, sizeof(struct sockaddr));
+					printf("[RECV]: Got PDU.\n");
+					recvfrom(sockfd,(void*)&pdu_in,sizeof(pdu_t),0,  NULL, NULL);
+					switch(pdu_in.type){
+						case AUTH:
+							dec(key,pdu_in.sname,serverName);
+							if(strcmp(serverName,respname)==0){
+								reg=1;
+							}else{
+								printf("[ERR] something weird happened.");
+								exit(-1);
+							}
+							break;
 					}
-
-					break;
-
-				case BAD:
-					printf("[AUTH] %s says:\n\n",pdu_in.sname);
-					printf("<< %s >>",pdu_in.data);
-					exit(-2);
-        			}
-
+				}else{
+					printf("[ERR] something weird happened.");
+					exit(-1);
+				}
+				break;
+			case BAD:
+				printf("[AUTH] %s says:\n\n",pdu_in.sname);
+				printf("<< %s >>",pdu_in.data);
+				exit(-2);
 		}
 
+	}
+
     	// Set up threads
-    	pthread_t threads[2];
-    	void *status;
+	pthread_t threads[2];
+	void *status;
 
 	//Setting ncurses screen...
   	initscr();
@@ -322,21 +318,21 @@ int main()
   	scrollok(inputwin, TRUE);
   	keypad(inputwin, TRUE );
 
-    	mvwprintw(msgwin, 1, 1, "*An0n Chat*");
+    mvwprintw(msgwin, 1, 1, "*An0n Chat*");
 	timeinfo = localtime ( &rawtime );
 	mvwprintw(msgwin, 1, 14, asctime (timeinfo));
 	line=2;
-    	mvwprintw(inputwin, 1, 1, ">> ");
-    	wrefresh(msgwin);
-    	wrefresh(inputwin);
+   	mvwprintw(inputwin, 1, 1, ">> ");
+   	wrefresh(msgwin);
+   	wrefresh(inputwin);
 
-    	pthread_attr_t attr;
-    	pthread_attr_init(&attr);
-    	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+   	pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    	pthread_create(&threads[0], &attr, sendMessage, NULL);
-    	pthread_create(&threads[1], &attr, listener, NULL);
-    	while(done==0);
+    pthread_create(&threads[0], &attr, sendMessage, NULL);
+    pthread_create(&threads[1], &attr, listener, NULL);
+    while(done==0);
     	endwin();
  
 	return(0);

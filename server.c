@@ -15,11 +15,9 @@ char help[5][100];
 char userNonce[5][110];  //Stores Nonces for Username.
 int loggedin[5];      // Holding log-in state for each of the five members
 int userbusy[5];      // A specific user is trying to authenticate. 
-int allUsersPresent=0;
 
 
-//char *pass="6,+i$C*i/>-&.x'8,#%a}_&-n9)&#{ce"; //Secret password derived from "thirtyfive"
-char *pass=":e-?%AM%6;o#cF|;!<=>Y#>0&e%!N)#A";
+char pass[32]="thirtyfive";
 struct sockaddr_in userIPs[5];
 char *ip;
 
@@ -51,6 +49,9 @@ description: provides the functionality to
 void init(){
 	int i=0;
 	printf("Initializing.\n");
+	printf("Session Passcode:\n");
+	bzero(pass,32);
+	getpasswrd(pass);
 	for(i=0;i<5;++i){
 		loggedin[i]=0;
 		userbusy[i]=0;
@@ -149,8 +150,6 @@ int sess_decode(int sd, struct sockaddr_in cliaddr, int len)
 							nbytes=sendto(sd,(void*)&pdu_out,sizeof(pdu_t),0,(struct sockaddr *)&cliaddr, len);
 							
 						}
-						allUsersPresent++;
-
 						break;
 					}
 				}
@@ -179,21 +178,21 @@ int sess_decode(int sd, struct sockaddr_in cliaddr, int len)
 					pdu_out.type=BAD;
                        			snprintf(msg, sizeof(msg), "The username entered is already logged in.");
                         		printf("[ALERT] %s",msg);
-					strcpy(pdu_out.sname,"s3rv3r");
+								strcpy(pdu_out.sname,"s3rv3r");
                         		strcpy(pdu_out.data,msg);
 					break;
 				}else if(strcmp(tmpname,userNames[i])==0&&userbusy[i]==1){
 					pdu_out.type=BAD;
                        			snprintf(msg, sizeof(msg), "The username entered is already authenticating.");
                         		printf("[ALERT] %s",msg);
-					strcpy(pdu_out.sname,"s3rv3r");
+								strcpy(pdu_out.sname,"s3rv3r");
                         		strcpy(pdu_out.data,msg);
 					break;
 				}else if(strcmp(tmpname,userNames[i])!=0&&i==4){
 					pdu_out.type=BAD;
                        			snprintf(msg, sizeof(msg), "**User Unknown**");
                         		printf("[ALERT] %s",msg);
-					strcpy(pdu_out.sname,"s3rv3r");
+								strcpy(pdu_out.sname,"s3rv3r");
                         		strcpy(pdu_out.data,msg);
 					break;
 				}
@@ -207,26 +206,12 @@ int sess_decode(int sd, struct sockaddr_in cliaddr, int len)
 			pdu_out.type=BCAST;
 			strcpy(pdu_out.data,pdu_in.data); //No decryption of user messages. *BENEFIT*
 			dec(pass,pdu_in.sname,tmpname); //Ensure Sender will not receive duplicate message.
-			enc(pass,"An0n",pdu_out.sname); //Replace Sender ID with [An0n]
-			if(allUsersPresent==5){
-				for(i=0;i<5;++i){
-					if(loggedin[i]==1&&strcmp(userNames[i],tmpname)!=0){
-						printf("[ANON] Sending Anonymous broadcast...\n");
-						nbytes=sendto(sd,(void*)&pdu_out,sizeof(pdu_t),0,(struct sockaddr *)&userIPs[i], len);
-					}
+			enc(pass,tmpname,pdu_out.sname); //Replace Sender ID with [An0n]
+			for(i=0;i<5;++i){
+				if(loggedin[i]==1&&strcmp(userNames[i],tmpname)!=0){
+					nbytes=sendto(sd,(void*)&pdu_out,sizeof(pdu_t),0,(struct sockaddr *)&userIPs[i], len);
 				}
-			}else{
-                                        bzero(pdu_out.data,220);
-                                        bzero(pdu_out.sname,20);
-                                        bzero(msg,110);
-
-                                        snprintf(msg,110,"[INFO] Not all users logged in. [%d/5] Logged In.",allUsersPresent);
-                                        enc(pass,"s3rv3r",pdu_out.sname);
-                                        enc(pass,msg,pdu_out.data);
-                                        nbytes=sendto(sd,(void*)&pdu_out,sizeof(pdu_t),0,(struct sockaddr *)&cliaddr, len);
-                                        printf("[INFO] Not Sending Packet, All Users Not Logged In.\n");
-
-                                }
+			}
 			break;
 
 		case LST:
@@ -274,7 +259,6 @@ int sess_decode(int sd, struct sockaddr_in cliaddr, int len)
 					nbytes=sendto(sd,(void*)&pdu_out,sizeof(pdu_t),0,(struct sockaddr *)&userIPs[i], len);
 				}
 			}
-			allUsersPresent=allUsersPresent-1;
 			break;
 			
 
